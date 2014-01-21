@@ -1,4 +1,4 @@
-package ohloc.ohloc;
+package ohloc;
 
 import java.io.File;
 import java.io.FilenameFilter;

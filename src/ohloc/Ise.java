@@ -16,7 +16,7 @@
  *
  */
 
-package ohloc.ohloc;
+package ohloc;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

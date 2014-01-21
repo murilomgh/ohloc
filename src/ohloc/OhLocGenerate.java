@@ -16,7 +16,7 @@
  *
  */
 
-package ohloc.ohloc;
+package ohloc;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -37,8 +37,8 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ohloc.ohloc.ResumeMsg.MsgTypeE;
-import ohloc.ohloc.ResumeMsg.OpE;
+import ohloc.ResumeMsg.MsgTypeE;
+import ohloc.ResumeMsg.OpE;
 
 
 

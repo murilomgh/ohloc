@@ -16,7 +16,7 @@
  *
  */
 
-package ohloc.ohloc;
+package ohloc;
 
 /**
  * Este metodo representa de um resumo de uma mesagem ATS ( FPL, FPLs, DLA, CHG ou CNL )
