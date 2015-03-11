@@ -3,7 +3,7 @@ ohloc
 
 Automação de mensagens CONFAC e algo mais.
 
-Recursos principais:
+## Recursos principais:
 ---------
 
 * Geração automática de mensagens LOC
@@ -12,10 +12,15 @@ Recursos principais:
 * Identificação de mensagens MOV contendo erros sintáticos
 * Separação das mensagens MOV, ISE e LOC em blocos para transmissão
 
-LOG
-===
+## LOG
+=====
 
-* Versão 1.22
-    * Reorgnaização do projeto
-    
-Completar...
+* Versão 1.2
+	* Controle da numeração das mensages de serviço, numerando as mensagens LOC
+	* Geração de mensagem de fechamento de serviço para o SICONFAC
+	* Mudança no número de mensagens por bloco para 3000
+
+* Versão 1.13b
+	* Alterações para otimização de alguns problemas
+
+* Versão 1.0

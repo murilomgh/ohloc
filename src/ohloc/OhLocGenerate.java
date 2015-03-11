@@ -68,8 +68,8 @@ public class OhLocGenerate {
 
 	
 	//Set de endereco de arquivo de configuracao
-	//private static final String ADDRESS_FILE_FOR_CONFIG                 = "/config.properties";
-	private static final String ADDRESS_FILE_FOR_CONFIG                 = "/config-complete.properties";
+	private static final String ADDRESS_FILE_FOR_CONFIG                 = "/config.properties";
+	//private static final String ADDRESS_FILE_FOR_CONFIG                 = "/config-complete.properties";
 	
 	
 
@@ -189,6 +189,7 @@ public class OhLocGenerate {
 	private static String TITLE_REPORT_FOR_STATISTICS		= "RELATORIO_PARA_FINS_ESTATISTICO_";   	//prefixo para gerar relarorio estatistico
 	
 	//Variaveis para customizacao e os valores padroes em caso de falha de leitura do arquivo config.properties.
+	private static int NUMBER_OF_NEXT_SVC_MSG				= 1;										// Numero da proxima mensagem de servico
 	private static int NUMBER_OF_MSG_FOR_BLOCK_MOV			= 25;  							  			// Numero de mensagens por bloco para MOV
 	private static int NUMBER_OF_MSG_FOR_BLOCK_LOC			= 25;  										// Numero de mensagens por bloco para LOC
 	private static int NUMBER_OF_MSG_FOR_BLOCK_ISE			= 25;  										// Numero de mensagens por bloco para ISE
@@ -228,9 +229,9 @@ public class OhLocGenerate {
         ftDateFile =new SimpleDateFormat ("yyyy_MM_dd_hh_mm_ss_SSS");  			// 2014_01_05_10_39_29_361
     	
 		props = new Properties(); 
+		
 		try {
 			props.load((OhLocGenerate.class.getResourceAsStream(ADDRESS_FILE_FOR_CONFIG)));
-			
 			
 			// Informa os enderecos para obtencao de arquivos
 			ADDRESS_FPL_OF_TARGET_FOLDER 		= ( props.getProperty("adress-for-fpl-repository") == null ? ADDRESS_FPL_OF_TARGET_FOLDER : props.getProperty("adress-for-fpl-repository").trim() );
@@ -255,7 +256,8 @@ public class OhLocGenerate {
 			//System.out.println("title-report-for-statistics: " + TITLE_REPORT_FOR_STATISTICS);
 			
 			
-			//Variaveis para customizacao 
+			//Variaveis para customizacao
+			NUMBER_OF_NEXT_SVC_MSG				= Integer.parseInt( (props.getProperty("number-of-next-svc-msg") == null ? String.valueOf(NUMBER_OF_NEXT_SVC_MSG) : props.getProperty("number-of-next-svc-msg").trim()) );
 			NUMBER_OF_MSG_FOR_BLOCK_MOV 		= Integer.parseInt( (props.getProperty("number-of-msg-for-block-mov") == null ? String.valueOf(NUMBER_OF_MSG_FOR_BLOCK_MOV) : props.getProperty("number-of-msg-for-block-mov").trim()) );
 			NUMBER_OF_MSG_FOR_BLOCK_LOC 		= Integer.parseInt( (props.getProperty("number-of-msg-for-block-loc") == null ? String.valueOf(NUMBER_OF_MSG_FOR_BLOCK_LOC) : props.getProperty("number-of-msg-for-block-loc").trim()) );
 			NUMBER_OF_MSG_FOR_BLOCK_ISE 		= Integer.parseInt( (props.getProperty("number-of-msg-for-block-ise") == null ? String.valueOf(NUMBER_OF_MSG_FOR_BLOCK_ISE) : props.getProperty("number-of-msg-for-block-ise").trim()) );
@@ -264,6 +266,9 @@ public class OhLocGenerate {
 			TYPE_FOR_REPORT_STATICS        		= ( props.getProperty("type-for-report-statistics") == null ? TYPE_FOR_REPORT_STATICS : props.getProperty("type-for-report-statistics").trim() );
 			IS_READ_FILES_ALL_DIRECTORY_LEVEL   = Integer.parseInt( (props.getProperty("is-read-files-all-directory-level") == null ? String.valueOf(IS_READ_FILES_ALL_DIRECTORY_LEVEL) : props.getProperty("is-read-files-all-directory-level").trim()) );
 			SEPARATOR_FOR_REPORT_STATICS        = ( props.getProperty("separator-for-report-statistics") == null ? SEPARATOR_FOR_REPORT_STATICS : props.getProperty("separator-for-report-statistics").trim() );
+			
+			//@author Murilo
+			
 			
 			
 		} catch (IOException e1) {
@@ -1086,8 +1091,11 @@ public class OhLocGenerate {
 									String numberCONFAC = movText.substring(0, movText.indexOf("(MOV-")).trim();
 									String regiAircraftInCONFAC = movText.substring((movText.indexOf("(MOV-") + 5), movText.length() - 36 ).trim(); // Matricula da aeronave na CONFAC .:. PPYSE							
 									String keyCONFAC = regiAircraftInCONFAC + "-" + movText.substring(movText.length() - 11, movText.length() - 1).trim() ;  // Esta variave representa uma forma de identicar uma confac independente do seu numero ( PTYSZ-2712131950 )
-									    									
-									String gabaritoLoc = "SVC S/N RETEL [NUMBER]/MOV, ANV [REGISTRATION][LOC_CAMPO_10_FROM][LOC_CAMPO_11_ORIGIN][LOC_CAMPO_12_DESTINATION]";
+									  
+									
+									//@author Murilo
+									//TODO Inclusao de numeracao para as mensagens de servico e LOC
+									String gabaritoLoc = "SVC " + NUMBER_OF_NEXT_SVC_MSG + ".RETEL [NUMBER]/MOV, ANV [REGISTRATION][LOC_CAMPO_10_FROM][LOC_CAMPO_11_ORIGIN][LOC_CAMPO_12_DESTINATION]";
 									
 									String temp = gabaritoLoc.replace("[NUMBER]", numberCONFAC);
 									temp = temp.replace("[REGISTRATION]", regiAircraftInCONFAC);
@@ -1123,7 +1131,9 @@ public class OhLocGenerate {
 									}
 									
 									listOfMsgLocInFiles.add(temp);
-									
+									//@author Murilo
+									//Incrementa o numero da mensagem de servico
+									NUMBER_OF_NEXT_SVC_MSG++;
 									
 								}
 							}
@@ -1136,7 +1146,7 @@ public class OhLocGenerate {
 	    					
 	    					
 	    					//Obtendo a data pelo nome do arquivo CONFAC
-	    					//TODO Otimizar metodo para obtencao da data
+	    					//TODO Otimizar metodo para obtencao da data - caso onde nome do arquivo nao contem data
 	    					Matcher matcherFileConfac = PATTERN_FPL_IS_NAME_FILE_CONFAC.matcher(fileNameCONFAC.trim());
 	    					String dateOfCONFAC = "";
 	    					if( matcherFileConfac.find() && (fileNameCONFAC.indexOf(".txt") != -1) ){ 
@@ -1151,10 +1161,11 @@ public class OhLocGenerate {
 	    					int numberMovLast = tSetOfMsgConfacInFiles.size() + ( numberFirstMsgCONFAC - 1 ); // Numero da ultima mensagem Confac
 	    					
 	    					
-	    					//Cria arquivo de mensagem
+	    					//Cria o arquivo do relatorio
 	    					outFileEnd = "";
-	    					outFileEnd += HEADER_OF_FILE + " " + dateOfCONFAC + LINE_SEPARATOR + LINE_SEPARATOR + LINE_SEPARATOR;
-	    					
+	    					outFileEnd += "======= I N I C I O   D O   R E L A T O R I O =======" + LINE_SEPARATOR + LINE_SEPARATOR;
+	    					outFileEnd += HEADER_OF_FILE + " " + dateOfCONFAC + LINE_SEPARATOR + LINE_SEPARATOR;
+	    					outFileEnd += "TOTAIS:" + LINE_SEPARATOR + LINE_SEPARATOR;	    					
 	    					outFileEnd += TITLE_NUMBER_OF_ISE + " " + dfCountC.format(tSetOfMsgIseInFiles.size()) + LINE_SEPARATOR + LINE_SEPARATOR;
 	    					outFileEnd += TITLE_NUMBER_OF_LOC + " " + dfCountC.format(listOfMsgLocInFiles.size()) + LINE_SEPARATOR + LINE_SEPARATOR;
 	    					outFileEnd += TITLE_NUMBER_OF_MOV + " " + dfCountM.format(tSetOfMsgConfacInFiles.size()) + LINE_SEPARATOR + LINE_SEPARATOR;
@@ -1195,7 +1206,7 @@ public class OhLocGenerate {
 	    						if(countBlockMOV == 1 || countBlockMOV > NUMBER_OF_MSG_FOR_BLOCK_MOV){
 	    							countBlockMOV = 1;
 	    							countLeafMOV++;
-	    							outFileEnd += LINE_SEPARATOR + LINE_SEPARATOR + LINE_SEPARATOR + TITLE_HEADER_OF_BLOCKS_MOV  + " " + dateOfCONFAC + " FOLHA " + countLeafMOV + "/" + numberOfBlocksMOV + LINE_SEPARATOR + LINE_SEPARATOR;
+	    							outFileEnd += LINE_SEPARATOR + LINE_SEPARATOR + TITLE_HEADER_OF_BLOCKS_MOV  + " " + dateOfCONFAC + " FOLHA " + countLeafMOV + "/" + numberOfBlocksMOV + LINE_SEPARATOR + LINE_SEPARATOR;
 	    						}
 	    						
 	    						//outFileEnd += dfCountM.format(countMsgMOV) + ": " + msgMovText + LINE_SEPARATOR; // Destinado para teste
@@ -1208,7 +1219,7 @@ public class OhLocGenerate {
 	    					// QUEBRANDO LOC EM BLOCOS PARA SAIDA
 	    					if(listOfMsgLocInFiles.size() > 0){
 	    						outFileEnd += 	LINE_SEPARATOR + "=====================================================" 
-	    										+ LINE_SEPARATOR  + LINE_SEPARATOR + LINE_SEPARATOR + TITLE_LOC + LINE_SEPARATOR ;
+	    										+ LINE_SEPARATOR + LINE_SEPARATOR + TITLE_LOC + LINE_SEPARATOR ;
 	    					}
 	
 	    					double numberOfBlocksLOCAvaliation = ((double) listOfMsgLocInFiles.size() / ( double ) NUMBER_OF_MSG_FOR_BLOCK_LOC ); // trunca o valor
@@ -1228,7 +1239,7 @@ public class OhLocGenerate {
 	    						if(countBlockLOC == 1 || countBlockLOC > NUMBER_OF_MSG_FOR_BLOCK_LOC){
 	    							countBlockLOC = 1;
 	    							countLeafLOC++;
-	    							outFileEnd += LINE_SEPARATOR + LINE_SEPARATOR + LINE_SEPARATOR + TITLE_HEADER_OF_BLOCKS_LOC  + " " + dateOfCONFAC + " FOLHA " + countLeafLOC + "/" + numberOfBlocksLOC + LINE_SEPARATOR + LINE_SEPARATOR;
+	    							outFileEnd += LINE_SEPARATOR + LINE_SEPARATOR + TITLE_HEADER_OF_BLOCKS_LOC  + " " + dateOfCONFAC + " FOLHA " + countLeafLOC + "/" + numberOfBlocksLOC + LINE_SEPARATOR + LINE_SEPARATOR;
 	    						}
 	    						
 	    						//outFileEnd += dfCountM.format(countMsgLOC) + ": " + msgLOC + LINE_SEPARATOR; // Destinado para teste
@@ -1271,14 +1282,47 @@ public class OhLocGenerate {
 	    						if(countBlockISE == 1 || countBlockISE > NUMBER_OF_MSG_FOR_BLOCK_ISE){
 	    							countBlockISE = 1;
 	    							countLeafISE++;
-	    							outFileEnd += LINE_SEPARATOR + LINE_SEPARATOR + LINE_SEPARATOR + TITLE_HEADER_OF_BLOCKS_ISE  + " " + dateOfCONFAC + " FOLHA " + countLeafISE + "/" + numberOfBlocksISE + LINE_SEPARATOR + LINE_SEPARATOR;
+	    							outFileEnd += LINE_SEPARATOR + LINE_SEPARATOR + TITLE_HEADER_OF_BLOCKS_ISE  + " " + dateOfCONFAC + " FOLHA " + countLeafISE + "/" + numberOfBlocksISE + LINE_SEPARATOR + LINE_SEPARATOR;
 	    						}
 	    						
 	    						//outFileEnd += dfCountM.format(countMsgMOV) + ": " + msgMovText + LINE_SEPARATOR; // Destinado para teste
 	    						outFileEnd += msgIseText + LINE_SEPARATOR;
 	    					}
 	    					
+	    					//@author Murilo
+	    					//TODO GERACAO DA MENSAGEM DE FECHAMENTO DO SERVICO PARA O SICONFAC
+	    					outFileEnd += 	LINE_SEPARATOR + "=====================================================" 
+						   			+ LINE_SEPARATOR + LINE_SEPARATOR  + "FECHAMENTO DO SERVIÇO PARA O SICONFAC - LEMBRAR DE ATUALIZAR AS ISE OU COLOCAR ISE/0" + LINE_SEPARATOR ;
 	    					
+	    					//MODELO DE MENSAGEM: SVC 14. SBSP LS  ISE/0, MOV 79/91, PER/0.
+	    					
+	    					outFileEnd += "SVC " + NUMBER_OF_NEXT_SVC_MSG + ". SBSP LS ";
+	    					NUMBER_OF_NEXT_SVC_MSG++; //guardar a proxima mensagem de servico
+	    					
+	    					if(IS_NUMERATION_FOR_ISE == 0) { //nao efetua a contagem das ISE, operador deve ajustar manualmente
+	    						outFileEnd += "ISE " + "###" + "/" + "###" + ", ";
+	    					}
+	    					else if(tSetOfMsgIseInFiles.size() > 0){
+	    						outFileEnd += "ISE " + numberFirstISE + "/" + numberISE + ", ";
+	    					}
+	    					else {
+	    						outFileEnd += "ISE/0, ";
+	    					}
+	    					if(tSetOfMsgConfacInFiles.size() > 0){
+	    						outFileEnd += "MOV " + numberMovFirst + "/" + numberMovLast + ", "; 
+	    					}
+	    					else {
+	    						outFileEnd += "MOV/0, ";
+	    					}
+	    					outFileEnd += "PER/0.";
+	    					
+	    					//@author Murilo
+	    					//TODO ATUALIZACAO DO CONTADOR DE ISE NO ARQUIVO PROPERTIES
+	    					
+	    					FileOutputStream writeProps = new FileOutputStream(ADDRESS_FILE_FOR_CONFIG); //abrir arquivo de propriedades
+	    					props.setProperty("number-of-next-svc-msg", Integer.toString(NUMBER_OF_NEXT_SVC_MSG));
+	    					props.store(writeProps, null);
+	    					writeProps.close();
 	    					
 	    					// Armazenara um report sobre as mensagens MOV repetidas e mal formadas
 	    					String reportMovFailRead = ""; 
